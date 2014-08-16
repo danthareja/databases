@@ -12,12 +12,13 @@ exports.postMessage = function(req, res) {
   // declare this variable so we can retain access to it throughout the entire promise chain.
   var message;
 
-  var resultsCallback = function (results) {
+  var resultsCallback = function (err, results) {
       var chat = {
         message: message.message,
-        userid: results[0].id,
+        userid: results[0].ID,
         roomname: message.roomname
       };
+      console.log("inside results callback, chat is :", chat);
 
       saveMessage(chat.message, chat.userid, chat.roomname, function () {
         serverHelpers.sendResponse(res, message);
@@ -26,6 +27,7 @@ exports.postMessage = function(req, res) {
 
   parseData(req, function(_, msg) {
       message = msg;
+      console.log("inside parse data, msg is :", msg);
       findUser(msg.username, function (err, results) {
         // no results/0 results
         if (!results || !results.length) {
@@ -33,7 +35,7 @@ exports.postMessage = function(req, res) {
           saveUser(message.username, resultsCallback);
         } else {
           // user exists, post the message to this user
-          resultsCallback(results);
+          resultsCallback(err, results);
         }
       });
   });
